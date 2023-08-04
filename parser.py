@@ -1,6 +1,5 @@
 import base64
 import copy
-from IPython.display import Image, display
 from rule import *
 
 
@@ -133,7 +132,7 @@ def generate_mermaid_script(rules_list: list[Rule], title: str, module_type: str
 
     # Header
     script = ('---\n'
-              f'title: {title}\n'
+              f'title: {title} - {module_type}\n'
               '---\n')
     script += 'graph\n'
 
@@ -204,7 +203,13 @@ def generate_mermaid_script(rules_list: list[Rule], title: str, module_type: str
 
             num_arrows += 1
 
-    return script
+    # Generate flowchart image URL
+    script_bytes = script.encode("ascii")
+    base64_bytes = base64.b64encode(script_bytes)
+    base64_string = base64_bytes.decode("ascii")
+    url = 'https://mermaid.ink/img/' + base64_string
+
+    return url
 
 
 def print_formatted_config(rules_list: list[Rule]):
