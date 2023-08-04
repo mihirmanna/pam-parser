@@ -122,6 +122,91 @@ def traverse_all(rules_list: list[Rule], module_type: str, text_stacks: list[lis
     return text_stacks
 
 
+def generate_mermaid_script(rules_list: list[Rule], title: str, module_type: str):
+    """
+    Generates a Mermaid script to make a flowchart with the list of rules
+    :param rules_list: The list of rules in the PAM file
+    :param title: The title of the flowchart
+    :param module_type: The type of the modules in this stack
+    :return: The Mermaid flowchart script as a string
+    """
+
+    # Header
+    script = ('---\n'
+              f'title: {title}\n'
+              '---\n')
+    script += 'graph\n'
+
+    # Nodes
+    for rule in rules_list:
+        if rule.type == module_type:
+            script += f'{rule.line_num}[{rule.module}]\n'
+    script += ('x{die}\n'
+               'd{done}\n\n')
+
+    # Node fill colors
+    script += ('style x fill:#f14343\n'  # Die = red
+               'style d fill:#43f168\n\n')  # Done = green
+
+    # Arrows
+    num_arrows = 0
+    for rule in rules_list:
+        for i in range(3):
+            ctrl_action = rule.controls[i]
+
+            # No arrow drawn
+            if ctrl_action is None:
+                continue
+
+            script += f'{rule.line_num}'  # Initial node
+
+            # Arrow styling
+            if ctrl_action == 'bad':
+                script += '-.->'  # Dotted arrow
+            else:
+                script += '-->'  # Solid arrow
+            script += f'|{Flag(i).name}={ctrl_action}|'  # Arrow label (ex: SUCCESS=ok)
+
+            # Final node
+            if ctrl_action == 'done':
+                script += 'd\n'
+            elif ctrl_action == 'die':
+                script += 'x\n'
+            elif ctrl_action == 'ok':
+                if rules_list[rule.line_num].type == module_type:
+                    script += f'{rule.line_num + 1}\n'
+                else:
+                    script += 'd\n'
+            elif ctrl_action == 'ignore':
+                if rules_list[rule.line_num].type == module_type:
+                    script += f'{rule.line_num + 1}\n'
+                else:
+                    script += 'd\n'
+            elif ctrl_action == 'bad':
+                if rules_list[rule.line_num].type == module_type:
+                    script += f'{rule.line_num + 1}\n'
+                else:
+                    script += 'd\n'
+            else:  # Skipping lines in PAM file
+                next_line = rule.line_num + 1 + int(ctrl_action)
+                if rules_list[next_line - 1].type == module_type:
+                    script += f'{next_line}\n'
+                else:
+                    script += 'd\n'
+
+            # Arrow color
+            if i == 0:  # Current ctrl value is SUCCESS
+                script += f'linkStyle {num_arrows} stroke: green\n'
+            if ctrl_action == 'die':  # Arrow points to die
+                script += f'linkStyle {num_arrows} stroke: red\n'
+            if ctrl_action == 'bad':  # Arrow indicates bad stack
+                script += f'linkStyle {num_arrows} stroke: gray\n'
+
+            num_arrows += 1
+
+    return script
+
+
 def print_formatted_config(rules_list: list[Rule]):
     """Prints a formatted version of the PAM config file"""
 
@@ -155,5 +240,6 @@ if __name__ == '__main__':
     stacks = traverse_all(rules, 'auth', [[]])
 
     # Print rules and stack list to the console
-    print_formatted_config(rules)
+    # print_formatted_config(rules)
     # print_formatted_stacks(stacks)
+    print(generate_mermaid_script(rules, 'PAM Config', 'auth'))
