@@ -26,27 +26,6 @@ def read_config(file: str):
     return lines_2d
 
 
-def filter_2d(list_2d: list[list[str]], key: str, positive_search=True):
-    """
-    Filters a 2D list based on the provided key
-    :param list_2d: The list to filter
-    :param key: The key to filter by
-    :param positive_search: True if accepting only lists with the key, False if accepting only lists without the key
-    :return: The filtered 2D list
-    """
-
-    filtered_list = []
-    for list_ in list_2d:
-        if positive_search is True:
-            if key in list_:
-                filtered_list.append(list_)
-        else:
-            if key not in list_:
-                filtered_list.append(list_)
-
-    return filtered_list
-
-
 def parse_rules(rule_list: list[list[str]]):
     """
     Parses the list of config rules into a list of Rule objects with the corresponding attributes
