@@ -5,8 +5,8 @@ from rule import *
 
 def read_config(file: str):
     """
-    Reads a PAM config file and saves it to a 2D list
-    :param file: The absolute path of the file
+    Reads a PAM config file and saves its contents to a 2D list
+    :param file: The path to the file
     :return: A 2D list formatting of the file
     """
 
@@ -28,16 +28,17 @@ def read_config(file: str):
 
 def parse_rules(rule_list: list[list[str]]):
     """
-    Parses the list of config rules into a list of Rule objects with the corresponding attributes
+    Parses the list of config rules into a list of Rule objects with their corresponding attributes
     :param rule_list: The list of config rules
     :return: A list of Rule objects
     """
 
-    # Parse each rule into a Rule object
     rule_objects = []
+
     for i in range(len(rule_list)):
         line_num = i+1
         line = rule_list[i]
+
         if len(line) == 3:  # Rule definition has no args
             rule_objects.append(Rule(line_num, line[0], line[1], line[2]))
         elif len(line) > 3:  # Rule definition has args
@@ -46,11 +47,12 @@ def parse_rules(rule_list: list[list[str]]):
     return rule_objects
 
 
-def traverse_all(rules_list: list[Rule], module_type: str, text_stacks: list[list[str]], exit_branch=False, curr_line=1):
+def generate_stacks(rules_list: list[Rule], module_type: str, text_stacks: list[list[str]], exit_branch=False, curr_line=1):
     """
-    Recursively traverses all paths through the PAM file and makes a list of them
+    Recursively traverses all possible paths through the PAM file and makes a list of them. Filtered by a module type
+    (e.g. only traverse auth stacks)
     :param rules_list: The list of rules in the PAM file
-    :param module_type: The type of the module in the PAM file
+    :param module_type: The module type to filter by
     :param exit_branch: True if done or die is raised, the ctrl flag is None, or we're at the end of the PAM file
     :param curr_line: The current line in the PAM file
     :param text_stacks The stack list, to be returned eventually
@@ -82,31 +84,31 @@ def traverse_all(rules_list: list[Rule], module_type: str, text_stacks: list[lis
 
         # Go to the next module
         if ctrl_action is None:
-            text_stacks = traverse_all(rules_list, module_type, text_stacks, True, curr_line)
+            text_stacks = generate_stacks(rules_list, module_type, text_stacks, True, curr_line)
         elif ctrl_action == 'done':
-            text_stacks = traverse_all(rules_list, module_type, text_stacks, True, curr_line)
+            text_stacks = generate_stacks(rules_list, module_type, text_stacks, True, curr_line)
         elif ctrl_action == 'die':
-            text_stacks = traverse_all(rules_list, module_type, text_stacks, True, curr_line)
+            text_stacks = generate_stacks(rules_list, module_type, text_stacks, True, curr_line)
         elif ctrl_action == 'ok':
-            text_stacks = traverse_all(rules_list, module_type, text_stacks, False, curr_line + 1)
+            text_stacks = generate_stacks(rules_list, module_type, text_stacks, False, curr_line + 1)
         elif ctrl_action == 'ignore':
-            text_stacks = traverse_all(rules_list, module_type, text_stacks, False, curr_line + 1)
+            text_stacks = generate_stacks(rules_list, module_type, text_stacks, False, curr_line + 1)
         elif ctrl_action == 'bad':
-            text_stacks = traverse_all(rules_list, module_type, text_stacks, False, curr_line + 1)
+            text_stacks = generate_stacks(rules_list, module_type, text_stacks, False, curr_line + 1)
         else:  # Skipping lines
             next_line = curr_line + 1 + int(ctrl_action)
-            text_stacks = traverse_all(rules_list, module_type, text_stacks, False, next_line)
+            text_stacks = generate_stacks(rules_list, module_type, text_stacks, False, next_line)
 
     return text_stacks
 
 
-def generate_mermaid_script(rules_list: list[Rule], title: str, module_type: str):
+def generate_mermaid(rules_list: list[Rule], title: str, module_type: str):
     """
-    Generates a Mermaid script to make a flowchart with the list of rules
+    Generates a URL to a Mermaid flowchart with the list of rules
     :param rules_list: The list of rules in the PAM file
     :param title: The title of the flowchart
-    :param module_type: The type of the modules in this stack
-    :return: The Mermaid flowchart script as a string
+    :param module_type: The module type to filter by
+    :return: The Mermaid flowchart URL as a string
     """
 
     # Header
@@ -136,7 +138,8 @@ def generate_mermaid_script(rules_list: list[Rule], title: str, module_type: str
             if ctrl_action is None:
                 continue
 
-            script += f'{rule.line_num}'  # Initial node
+            # Initial node
+            script += f'{rule.line_num}'
 
             # Arrow styling
             if ctrl_action == 'bad':
@@ -210,7 +213,7 @@ def print_formatted_config(rules_list: list[Rule]):
 
 
 def print_formatted_stacks(stacks_list: list[list[str]]):
-    """Prints a formatted version of the stack list"""
+    """Prints a formatted version of the text stack list"""
 
     for stack in stacks_list:
         for module in stack:
@@ -221,9 +224,9 @@ def print_formatted_stacks(stacks_list: list[list[str]]):
 if __name__ == '__main__':
     config_list = read_config('samplePAM.txt')
     rules = parse_rules(config_list)
-    stacks = traverse_all(rules, 'auth', [[]])
+    stacks = generate_stacks(rules, 'auth', [[]])
 
     # Print rules and stack list to the console
     # print_formatted_config(rules)
     # print_formatted_stacks(stacks)
-    print(generate_mermaid_script(rules, 'PAM Config', 'auth'))
+    # print(generate_mermaid(rules, 'PAM Config', 'auth'))
