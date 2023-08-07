@@ -36,12 +36,12 @@ if __name__ == '__main__':
     print_formatted_config(rules)
     if args.mermaid is True:
         if args.module_type is None:
-            parser.error('The --mermaid argument requires the --module_type')
+            parser.error('The --mermaid (-m) argument requires --module_type (-t) MODULE_TYPE')
         else:
             print(generate_mermaid(rules, 'PAM Configuration', args.module_type))
     if args.text_stacks is True:
         if args.module_type is None:
-            parser.error('The --mermaid argument requires the --module_type')
+            parser.error('The --mermaid (-m) argument requires --module_type (-t) MODULE_TYPE')
         else:
             stacks = generate_stacks(rules, args.module_type, [[]])
             print_formatted_stacks(stacks)
