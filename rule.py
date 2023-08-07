@@ -13,21 +13,21 @@ class Flag(IntEnum):
 class Rule:
     """Outlines a PAM rule object with various attributes"""
 
-    def __init__(self, line_num: int, type_: str, control: str, module: str, args=None):
+    def __init__(self, line_num: int, module_type: str, control: str, module: str, args=None):
         """
         Constructs a new PAM rule with the given parameters
         :param line_num: The line number of the rule in the PAM file
-        :param type_: Can be one of four types: auth, account, password, or session
+        :param module_type: Can be one of four types: auth, account, password, or session
         :param control: Control flags for controlling success/failure behavior
-        :param module: The filename of the PAM
+        :param module: The name of the module (ex: pam_env.so)
         :param args: List of tokens for controlling module behavior
         """
 
         # Check module type and assign it
-        if not (type_ in ['auth', 'account', 'password', 'session']):
+        if not (module_type in ['auth', 'account', 'password', 'session']):
             raise Exception('Invalid module type')
         else:
-            self.type = type_
+            self.type = module_type
 
         # Assign control flags [success, ignore, default]
         self.controls: list = [None, None, None]
