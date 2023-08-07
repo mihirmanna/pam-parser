@@ -1,47 +1,47 @@
-from parser import *
+from parse_functions import *
 import argparse
 
 if __name__ == '__main__':
 
-    parse_tool = argparse.ArgumentParser(description='This tool parses PAM files into human-readable formats, enabling '
-                                                     'systems admins to more easily debug them.')
+    parser = argparse.ArgumentParser(description='This tool parses PAM files into human-readable formats, enabling '
+                                                 'systems admins to more easily debug them.')
 
     # Required arguments
-    parse_tool.add_argument(
+    parser.add_argument(
         'config_file',
         type=str,
         help='The path to the PAM config file')
 
     # Optional arguments
-    parse_tool.add_argument(
+    parser.add_argument(
         '-t', '--module_type',
         type=str,
         help='Only modules of this type are included in the stack outputs. '
              'Must be one of: auth, account, password, session')
-    parse_tool.add_argument(
+    parser.add_argument(
         '-m', '--mermaid',
         default=False,
         action='store_true',
-        help='Return a URL to the mermaid diagram')
-    parse_tool.add_argument(
+        help='Return a URL to the Mermaid flowchart')
+    parser.add_argument(
         '-s', '--text_stacks',
         default=False,
         action='store_true',
-        help='Return a list of all the possible stacks')
+        help='Return a list of all possible stacks')
 
-    args = parse_tool.parse_args()
+    args = parser.parse_args()
     config_list = read_config(args.config_file)
     rules = parse_rules(config_list)
 
     print_formatted_config(rules)
     if args.mermaid is True:
         if args.module_type is None:
-            parse_tool.error('The --mermaid argument requires the --module_type')
+            parser.error('The --mermaid argument requires the --module_type')
         else:
             print(generate_mermaid(rules, 'PAM Configuration', args.module_type))
     if args.text_stacks is True:
         if args.module_type is None:
-            parse_tool.error('The --mermaid argument requires the --module_type')
+            parser.error('The --mermaid argument requires the --module_type')
         else:
             stacks = generate_stacks(rules, args.module_type, [[]])
             print_formatted_stacks(stacks)
