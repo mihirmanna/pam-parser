@@ -155,20 +155,20 @@ def generate_mermaid(rules_list: list[Rule], title: str, module_type: str):
                 elif ctrl_action == 'die':
                     script += 'x\n'
                 elif ctrl_action == 'ok':
-                    if rules_list[rule.line_num].type == module_type:
-                        script += f'{rule.line_num + 1}\n'
-                    else:
+                    if (rule.line_num + 1) > len(rules_list) or rules_list[rule.line_num].type != module_type:
                         script += 'd\n'
+                    else:
+                        script += f'{rule.line_num + 1}\n'
                 elif ctrl_action == 'ignore':
-                    if rules_list[rule.line_num].type == module_type:
-                        script += f'{rule.line_num + 1}\n'
-                    else:
+                    if rule.line_num + 1 > len(rules_list) or rules_list[rule.line_num].type != module_type:
                         script += 'd\n'
+                    else:
+                        script += f'{rule.line_num + 1}\n'
                 elif ctrl_action == 'bad':
-                    if rules_list[rule.line_num].type == module_type:
-                        script += f'{rule.line_num + 1}\n'
-                    else:
+                    if rule.line_num + 1 > len(rules_list) or rules_list[rule.line_num].type != module_type:
                         script += 'd\n'
+                    else:
+                        script += f'{rule.line_num + 1}\n'
                 else:  # Skipping lines in PAM file
                     next_line = rule.line_num + 1 + int(ctrl_action)
                     if rules_list[next_line - 1].type == module_type:
