@@ -1,6 +1,7 @@
 from parse_functions import *
 import argparse
 
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='This tool parses PAM files into human-readable formats, enabling '
