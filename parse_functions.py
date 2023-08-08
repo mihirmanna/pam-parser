@@ -131,59 +131,60 @@ def generate_mermaid(rules_list: list[Rule], title: str, module_type: str):
     # Arrows
     num_arrows = 0
     for rule in rules_list:
-        for i in range(3):
-            ctrl_action = rule.controls[i]
+        if rule.type == module_type:
+            for i in range(3):
+                ctrl_action = rule.controls[i]
 
-            # No arrow drawn
-            if ctrl_action is None:
-                continue
+                # No arrow drawn
+                if ctrl_action is None:
+                    continue
 
-            # Initial node
-            script += f'{rule.line_num}'
+                # Initial node
+                script += f'{rule.line_num}'
 
-            # Arrow styling
-            if ctrl_action == 'bad':
-                script += '-.->'  # Dotted arrow
-            else:
-                script += '-->'  # Solid arrow
-            script += f'|{Flag(i).name}={ctrl_action}|'  # Arrow label (ex: SUCCESS=ok)
-
-            # Final node
-            if ctrl_action == 'done':
-                script += 'd\n'
-            elif ctrl_action == 'die':
-                script += 'x\n'
-            elif ctrl_action == 'ok':
-                if rules_list[rule.line_num].type == module_type:
-                    script += f'{rule.line_num + 1}\n'
+                # Arrow styling
+                if ctrl_action == 'bad':
+                    script += '-.->'  # Dotted arrow
                 else:
-                    script += 'd\n'
-            elif ctrl_action == 'ignore':
-                if rules_list[rule.line_num].type == module_type:
-                    script += f'{rule.line_num + 1}\n'
-                else:
-                    script += 'd\n'
-            elif ctrl_action == 'bad':
-                if rules_list[rule.line_num].type == module_type:
-                    script += f'{rule.line_num + 1}\n'
-                else:
-                    script += 'd\n'
-            else:  # Skipping lines in PAM file
-                next_line = rule.line_num + 1 + int(ctrl_action)
-                if rules_list[next_line - 1].type == module_type:
-                    script += f'{next_line}\n'
-                else:
-                    script += 'd\n'
+                    script += '-->'  # Solid arrow
+                script += f'|{Flag(i).name}={ctrl_action}|'  # Arrow label (ex: SUCCESS=ok)
 
-            # Arrow color
-            if i == 0:  # Current ctrl value is SUCCESS
-                script += f'linkStyle {num_arrows} stroke: green\n'
-            if ctrl_action == 'die':  # Arrow points to die
-                script += f'linkStyle {num_arrows} stroke: red\n'
-            if ctrl_action == 'bad':  # Arrow indicates bad stack
-                script += f'linkStyle {num_arrows} stroke: gray\n'
+                # Final node
+                if ctrl_action == 'done':
+                    script += 'd\n'
+                elif ctrl_action == 'die':
+                    script += 'x\n'
+                elif ctrl_action == 'ok':
+                    if rules_list[rule.line_num].type == module_type:
+                        script += f'{rule.line_num + 1}\n'
+                    else:
+                        script += 'd\n'
+                elif ctrl_action == 'ignore':
+                    if rules_list[rule.line_num].type == module_type:
+                        script += f'{rule.line_num + 1}\n'
+                    else:
+                        script += 'd\n'
+                elif ctrl_action == 'bad':
+                    if rules_list[rule.line_num].type == module_type:
+                        script += f'{rule.line_num + 1}\n'
+                    else:
+                        script += 'd\n'
+                else:  # Skipping lines in PAM file
+                    next_line = rule.line_num + 1 + int(ctrl_action)
+                    if rules_list[next_line - 1].type == module_type:
+                        script += f'{next_line}\n'
+                    else:
+                        script += 'd\n'
 
-            num_arrows += 1
+                # Arrow color
+                if i == 0:  # Current ctrl value is SUCCESS
+                    script += f'linkStyle {num_arrows} stroke: green\n'
+                if ctrl_action == 'die':  # Arrow points to die
+                    script += f'linkStyle {num_arrows} stroke: red\n'
+                if ctrl_action == 'bad':  # Arrow indicates bad stack
+                    script += f'linkStyle {num_arrows} stroke: gray\n'
+
+                num_arrows += 1
 
     # Generate flowchart image URL
     script_bytes = script.encode("ascii")
