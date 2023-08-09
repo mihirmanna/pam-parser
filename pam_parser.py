@@ -43,11 +43,13 @@ if __name__ == '__main__':
     config_list = read_config(args.config_file)
     rules = parse_rules(config_list)
 
+    # Behavior controls
     if args.mermaid is True:
         if args.module_type is None:
             parser.error('The --mermaid (-m) argument requires --module_type (-t) MODULE_TYPE')
         else:
-            print(generate_mermaid(rules, 'PAM Configuration', args.module_type))
+            url = generate_mermaid(rules, 'PAM Configuration', args.module_type)
+            print(url)
     if args.text_stacks is True:
         if args.module_type is None:
             parser.error('The --mermaid (-m) argument requires --module_type (-t) MODULE_TYPE')
